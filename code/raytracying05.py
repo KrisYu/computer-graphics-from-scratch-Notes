@@ -26,6 +26,8 @@ def putPixel(pixels, x, y, color):
 #  A very basic raytracer.
 # ======================================================================
 
+EPSILON = 0.001
+
 class Sphere(object):
 	"""
 	Sphere class
@@ -33,11 +35,12 @@ class Sphere(object):
 	:type radius: float
 	:type color: typle as color
 	"""
-	def __init__(self, center, radius, color, specular):
+	def __init__(self, center, radius, color, specular, reflective):
 		self.center = center
 		self.radius = radius
 		self.color = color
 		self.specular = specular
+		self.reflective = reflective
 
 class Light(object):
 	"""
@@ -51,7 +54,8 @@ class Light(object):
 		self.intensity = intensity
 		self.position = position
 
-
+def reflectRay(r, n):
+	return 2*n*n.dot(r) - r
 
 def canvasToViewPort(p2d):
 	"""
@@ -99,16 +103,26 @@ def ComputeLighting(point, normal, view, specular):
 		if light.ltype == 'AMBIENT':
 			intensity += light.intensity
 		else:
-			vec_l = Vector3(0 , 0, 0)
+			vec_l, t_max = Vector3(0 , 0, 0), 1.0
+
 			if light.ltype == 'POINT':
 				vec_l = light.position - point
+				t_max = 1.0
 			else:
 				vec_l = light.position # direction
+				t_max = float('inf')
 
+			# Shadow check
+			(blocker,_) = closestIntersection(point, vec_l, EPSILON, t_max)
+			if blocker:
+				continue
+
+			# diffuse
 			n_dot_l = normal.dot(vec_l)
 			if n_dot_l > 0:
 				intensity += light.intensity * n_dot_l / (normal.get_length() * vec_l.get_length())
 
+			# specular
 			if specular != -1:
 				vec_r = 2 * normal * normal.dot(vec_l) - vec_l
 				r_dot_v = view.dot(vec_r)
@@ -117,14 +131,14 @@ def ComputeLighting(point, normal, view, specular):
 
 	return intensity
 
-def traceRay(origin, direction, min_t, max_t):
+def closestIntersection(origin, direction, min_t, max_t):
 	"""
-	Traces a ray against the set of spheres in the scene.
+	Find the closest intersection between a ray and the spheres in the scene.
 	:type origin: Vector3
 	:type direction: Vector3
 	:type min_t: float
 	:type max_t: float
-	:rtype: color
+	:rtype: closest_sphere, closest_t
 	"""
 	closest_t = float('inf')
 	closest_sphere = None
@@ -137,7 +151,20 @@ def traceRay(origin, direction, min_t, max_t):
 		if t2 < closest_t and min_t < t2 and t2 < max_t:
 			closest_t = t2
 			closest_sphere = sphere
+	return (closest_sphere, closest_t)
 
+
+def traceRay(origin, direction, min_t, max_t, depth):
+	"""
+	Traces a ray against the set of spheres in the scene.
+	:type origin: Vector3
+	:type direction: Vector3
+	:type min_t: float
+	:type max_t: float
+	:rtype: color
+	"""
+	(closest_sphere, closest_t) = closestIntersection(origin, direction, min_t, max_t)
+	
 	if closest_sphere == None:
 		return background_color
 
@@ -145,8 +172,19 @@ def traceRay(origin, direction, min_t, max_t):
 	normal = point - closest_sphere.center
 	normal = normal * 1.0 / normal.get_length()
 
-	light = ComputeLighting(point, normal, -direction, sphere.specular)
-	return multiplyColor(closest_sphere.color, light) 
+	light = ComputeLighting(point, normal, -direction, closest_sphere.specular)
+	local_color = multiplyColor(closest_sphere.color, light)
+
+	r = closest_sphere.reflective
+	if r <= 0 or depth <= 0:
+		return local_color
+
+	reflected_ray = reflectRay(-direction, normal)
+	reflected_color = traceRay(point, reflected_ray, EPSILON, float('inf'), depth - 1)
+
+	(r1, g1, b1) = multiplyColor(local_color, 1 - r) 
+	(r2, g2, b2) = multiplyColor(reflected_color, r)
+	return (r1 + r2, g1 + g2, b1 + b2)
 
 def clamp(color):
 	"""
@@ -156,6 +194,7 @@ def clamp(color):
 	"""
 	return min(255, max(0, int(color)))
 
+
 def multiplyColor(color, k):
 	"""
 	multiply color and clamp to 0~255
@@ -164,14 +203,17 @@ def multiplyColor(color, k):
 	return (clamp(r * k), clamp(g * k), clamp(b * k))
 
 
+
+
+recursion_depth = 1
 viewport_size = 1
 projection_plane_z = 1
 camera_position = Vector3(0, 0, 0)
-background_color = (255, 255, 255)
-spheres = [Sphere(Vector3(0.0, -1.0, 3.0), 1.0, (255, 0, 0), 500),
-           Sphere(Vector3(2.0, 0.0, 4.0), 1.0, (0, 0, 255), 500),
-           Sphere(Vector3(-2.0, 0.0, 4.0), 1.0, (0, 255, 0), 10),
-           Sphere(Vector3(0.0, -5001.0, 0.0), 5000.0, (255, 255, 0), 1000)]
+background_color = (0, 0, 0)
+spheres = [Sphere(Vector3(0.0, -1.0, 3.0), 1.0, (255, 0, 0), 500, 0.2),
+           Sphere(Vector3(2.0, 0.0, 4.0), 1.0, (0, 0, 255), 500, 0.3),
+           Sphere(Vector3(-2.0, 0.0, 4.0), 1.0, (0, 255, 0), 10, 0.4),
+           Sphere(Vector3(0.0, -5001.0, 0.0), 5000.0, (255, 255, 0), 1000, 0.5)]
 
 
 screen_width = 600
@@ -192,10 +234,10 @@ def run():
 	for x in xrange(-screen_width/2, screen_width/2):
 		for y in xrange(-screen_height/2,screen_height/2):
 			direction = canvasToViewPort(Vector2(x, y))
-			color = traceRay(camera_position, direction, 1, float('inf'))
-			putPixel(pixels , x, y ,color)
+			color = traceRay(camera_position, direction, 1, float('inf'), recursion_depth)
+			putPixel(pixels , x, y , color)
 
-	image.save("raytracying03.png")
+	image.save("raytracying05.png")
 
 #
 # Main loop.

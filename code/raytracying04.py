@@ -170,10 +170,8 @@ def traceRay(origin, direction, min_t, max_t):
 	normal = point - closest_sphere.center
 	normal = normal * 1.0 / normal.get_length()
 
-	(r , g , b)  = closest_sphere.color
-	return (clamp(r * ComputeLighting(point, normal, -direction, closest_sphere.specular)),
-		    clamp(g * ComputeLighting(point, normal, -direction, closest_sphere.specular)),
-		    clamp(b * ComputeLighting(point, normal, -direction, closest_sphere.specular)), 255)
+	light = ComputeLighting(point, normal, -direction, closest_sphere.specular)
+	return multiplyColor(closest_sphere.color, light)
 
 def clamp(color):
 	"""
@@ -184,12 +182,20 @@ def clamp(color):
 	return min(255, max(0, int(color)))
 
 
+def multiplyColor(color, k):
+	"""
+	multiply color and clamp to 0~255
+	"""
+	r, g, b = color[0], color[1], color[2]
+	return (clamp(r * k), clamp(g * k), clamp(b * k))
+
+
 
 
 viewport_size = 1
 projection_plane_z = 1
 camera_position = Vector3(0, 0, 0)
-background_color = (255, 255, 255, 255)
+background_color = (255, 255, 255)
 spheres = [Sphere(Vector3(0.0, -1.0, 3.0), 1.0, (255, 0, 0), 500),
            Sphere(Vector3(2.0, 0.0, 4.0), 1.0, (0, 0, 255), 500),
            Sphere(Vector3(-2.0, 0.0, 4.0), 1.0, (0, 255, 0), 10),

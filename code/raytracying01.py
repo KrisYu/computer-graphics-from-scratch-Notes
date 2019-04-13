@@ -101,7 +101,7 @@ def traceRay(origin, direction, min_t, max_t):
 viewport_size = 1
 projection_plane_z = 1
 camera_position = Vector3(0, 0, 0)
-background_color = (255, 255, 255, 255)
+background_color = (255, 255, 255)
 spheres = [Sphere(Vector3(0.0, -1.0, 3.0), 1.0, (255, 0, 0)),
            Sphere(Vector3(2.0, 0.0, 4.0), 1.0, (0, 0, 255)),
            Sphere(Vector3(-2.0, 0.0, 4.0), 1.0, (0, 255, 0))]
