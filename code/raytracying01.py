@@ -1,18 +1,17 @@
-#-*- coding: utf-8 -*-
 #!python
 # Ray Tracying without lighting
 from PIL import Image
-import math
-from gameobjects.vector3 import Vector3
-from gameobjects.vector2 import Vector2
+from math import sqrt, inf
+from vector3 import Vector3
+from collections import namedtuple
 
 def putPixel(pixels, x, y, color):
 	"""
 	The PutPixel() function.
 	"""
 	# canvas coordinate to screen coordinate
-	x = screen_width / 2 + x
-	y = screen_height / 2  - y 
+	x = screen_width // 2 + x
+	y = screen_height // 2  - y 
 
 	if x < 0 or x >= screen_height or y < 0 or y >= screen_height:
 		return
@@ -23,28 +22,17 @@ def putPixel(pixels, x, y, color):
 # ======================================================================
 #  A very basic raytracer.
 # ======================================================================
-
-class Sphere(object):
-	"""
-	Sphere class
-	:type center: Vector3
-	:type radius: float
-	:type color: typle as color
-	"""
-	def __init__(self, center, radius, color):
-		self.center = center
-		self.radius = radius
-		self.color = color
+Sphere = namedtuple('Sphere', ['center', 'radius', 'color'])
 
 def canvasToViewPort(p2d):
 	"""
 	Converts 2D canvas coordinates to 3D viewport coordinates.
-	:type p2d: Vector2
+	:type p2d: tuple
     :rtype: Vector3
 	"""
 
-	return Vector3(p2d.x * viewport_size / screen_width,
-		p2d.y * viewport_size / screen_height,
+	return Vector3(p2d[0] * viewport_size / screen_width,
+		p2d[1] * viewport_size / screen_height,
 		projection_plane_z)
 
 
@@ -57,17 +45,17 @@ def intersectRaySphere(origin, direction, sphere):
 	:type sphere: Sphere
 	:rtype: [List[int]]
 	"""
-	oc = sphere.center - origin
+	oc = origin - sphere.center
 	k1 = direction.dot(direction)
-	k2 = - 2 * oc.dot(direction)
+	k2 = 2 * oc.dot(direction)
 	k3 = oc.dot(oc) - sphere.radius * sphere.radius
 
 	discriminant = k2 * k2 - 4 * k1 * k3
 	if discriminant < 0:
-		return [float('inf'), float('inf')]
+		return [inf, inf]
 
-	t1 = (-k2 + math.sqrt(discriminant)) / (2*k1)
-	t2 = (-k2 - math.sqrt(discriminant)) / (2*k1)
+	t1 = (-k2 + sqrt(discriminant)) / (2*k1)
+	t2 = (-k2 - sqrt(discriminant)) / (2*k1)
 	return [t1, t2]
 
 
@@ -80,7 +68,7 @@ def traceRay(origin, direction, min_t, max_t):
 	:type max_t: float
 	:rtype: color
 	"""
-	closest_t = float('inf')
+	closest_t = inf
 	closest_sphere = None
 
 	for sphere in spheres:
@@ -114,13 +102,13 @@ screen_height = 600
 
 
 def run():
-	image = Image.new("RGBA", (screen_width, screen_height), background_color)
+	image = Image.new("RGB", (screen_width, screen_height), background_color)
 	pixels = image.load()
 
-	for x in xrange(-screen_width/2, screen_width/2):
-		for y in xrange(-screen_height/2,screen_height/2):
-			direction = canvasToViewPort(Vector2(x, y))
-			color = traceRay(camera_position, direction, 1, float('inf'))
+	for x in range(-screen_width//2, screen_width//2):
+		for y in range(-screen_height//2,screen_height//2):
+			direction = canvasToViewPort((x, y))
+			color = traceRay(camera_position, direction, 1, inf)
 			putPixel(pixels , x, y ,color)
 
 	image.save("raytracying01.png")

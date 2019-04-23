@@ -1,20 +1,17 @@
-#-*- coding: utf-8 -*-
 #!python
-
-#raytracying02.py
-# Ray Tracying with lighting
+# Ray Tracying with diffuse
 from PIL import Image
-import math
-from gameobjects.vector3 import Vector3
-from gameobjects.vector2 import Vector2
+from math import sqrt, inf
+from vector3 import Vector3
+from collections import namedtuple
 
 def putPixel(pixels, x, y, color):
 	"""
 	The PutPixel() function.
 	"""
 	# canvas coordinate to screen coordinate
-	x = screen_width / 2 + x
-	y = screen_height / 2  - y 
+	x = screen_width // 2 + x
+	y = screen_height // 2  - y 
 
 	if x < 0 or x >= screen_height or y < 0 or y >= screen_height:
 		return
@@ -26,17 +23,7 @@ def putPixel(pixels, x, y, color):
 #  A very basic raytracer.
 # ======================================================================
 
-class Sphere(object):
-	"""
-	Sphere class
-	:type center: Vector3
-	:type radius: float
-	:type color: typle as color
-	"""
-	def __init__(self, center, radius, color):
-		self.center = center
-		self.radius = radius
-		self.color = color
+Sphere = namedtuple('Sphere', ['center', 'radius', 'color'])
 
 class Light(object):
 	"""
@@ -45,22 +32,20 @@ class Light(object):
 	:type intensity: float
 	:type position: vector
 	"""
-	def __init__(self, ltype, intensity, position):
+	def __init__(self, ltype, intensity, position = None):
 		self.ltype = ltype
 		self.intensity = intensity
 		self.position = position
 
-
-
 def canvasToViewPort(p2d):
 	"""
 	Converts 2D canvas coordinates to 3D viewport coordinates.
-	:type p2d: Vector2
+	:type p2d: tuple
     :rtype: Vector3
 	"""
 
-	return Vector3(p2d.x * viewport_size / screen_width,
-		p2d.y * viewport_size / screen_height,
+	return Vector3(p2d[0] * viewport_size / screen_width,
+		p2d[1] * viewport_size / screen_height,
 		projection_plane_z)
 
 
@@ -73,17 +58,17 @@ def intersectRaySphere(origin, direction, sphere):
 	:type sphere: Sphere
 	:rtype: [List[int]]
 	"""
-	oc = sphere.center - origin
+	oc = origin - sphere.center
 	k1 = direction.dot(direction)
-	k2 = - 2 * oc.dot(direction)
+	k2 = 2 * oc.dot(direction)
 	k3 = oc.dot(oc) - sphere.radius * sphere.radius
 
 	discriminant = k2 * k2 - 4 * k1 * k3
 	if discriminant < 0:
-		return [float('inf'), float('inf')]
+		return [inf, inf]
 
-	t1 = (-k2 + math.sqrt(discriminant)) / (2*k1)
-	t2 = (-k2 - math.sqrt(discriminant)) / (2*k1)
+	t1 = (-k2 + sqrt(discriminant)) / (2*k1)
+	t2 = (-k2 - sqrt(discriminant)) / (2*k1)
 	return [t1, t2]
 
 def ComputeLighting(point, normal):
@@ -92,7 +77,6 @@ def ComputeLighting(point, normal):
 	:type normal: Vector3, vector
 	"""
 	intensity = 0
-	length_n = normal.get_length()
 
 	for light in lights:
 		if light.ltype == 'AMBIENT':
@@ -100,13 +84,13 @@ def ComputeLighting(point, normal):
 		else:
 			vec_l = Vector3(0 , 0, 0)
 			if light.ltype == 'POINT':
-				vec_l = light.position - point
+				vec_l = light.position - point 
 			else:
-				vec_l = light.position # direction
+				vec_l = -light.position # direction
 
 			n_dot_l = normal.dot(vec_l)
 			if n_dot_l > 0:
-				intensity += light.intensity * n_dot_l / (normal.get_length() * vec_l.get_length())
+				intensity += light.intensity * n_dot_l / (normal.length * vec_l.length)
 
 	return intensity
 
@@ -119,7 +103,7 @@ def traceRay(origin, direction, min_t, max_t):
 	:type max_t: float
 	:rtype: color
 	"""
-	closest_t = float('inf')
+	closest_t = inf
 	closest_sphere = None
 
 	for sphere in spheres:
@@ -135,58 +119,39 @@ def traceRay(origin, direction, min_t, max_t):
 		return background_color
 
 	point = origin + closest_t * direction
-	normal = point - closest_sphere.center
-	normal = normal * 1.0 / normal.get_length()
+	normal = (point - closest_sphere.center).normalize()
 
-	light = ComputeLighting(point, normal) 
-	return multiplyColor(closest_sphere.color, light)
-
-def clamp(color):
-	"""
-	clamp color between 0 and 255
-	:type color: tuple
-	:rtype : color
-	"""
-	return min(255, max(0, int(color)))
-
-def multiplyColor(color, k):
-	"""
-	multiply color and clamp to 0~255
-	"""
-	r, g, b = color[0], color[1], color[2]
-	return (clamp(r * k), clamp(g * k), clamp(b * k))
-
-
+	color = closest_sphere.color * ComputeLighting(point, normal)
+	return (int(color.r), int(color.g), int(color.b))
 
 viewport_size = 1
 projection_plane_z = 1
 camera_position = Vector3(0, 0, 0)
 background_color = (255, 255, 255)
-spheres = [Sphere(Vector3(0.0, -1.0, 3.0), 1.0, (255, 0, 0)),
-           Sphere(Vector3(2.0, 0.0, 4.0), 1.0, (0, 0, 255)),
-           Sphere(Vector3(-2.0, 0.0, 4.0), 1.0, (0, 255, 0))]
-
+spheres = [Sphere(Vector3(0.0, -1.0, 3.0), 1.0, Vector3(255, 0, 0)),
+           Sphere(Vector3(2.0, 0.0, 4.0), 1.0, Vector3(0, 0, 255)),
+           Sphere(Vector3(-2.0, 0.0, 4.0), 1.0, Vector3(0, 255, 0))]
 
 screen_width = 600
 screen_height = 600
 
+
 lights = [
-  Light('AMBIENT', 0.2, None),
+  Light('AMBIENT', 0.2),
   Light('POINT', 0.6, Vector3(2, 1, 0)),
   Light('DIRECTIONAL', 0.2, Vector3(1, 4, 4))
 ]
 
 
-
 def run():
-	image = Image.new("RGBA", (screen_width, screen_height), background_color)
+	image = Image.new("RGB", (screen_width, screen_height), background_color)
 	pixels = image.load()
 
-	for x in xrange(-screen_width/2, screen_width/2):
-		for y in xrange(-screen_height/2,screen_height/2):
-			direction = canvasToViewPort(Vector2(x, y))
-			color = traceRay(camera_position, direction, 1, float('inf'))
-			putPixel(pixels , x, y ,color)
+	for x in range(-screen_width//2, screen_width//2):
+		for y in range(-screen_height//2,screen_height//2):
+			direction = canvasToViewPort((x, y))
+			color = traceRay(camera_position, direction, 1, inf)
+			putPixel(pixels, x, y ,color)
 
 	image.save("raytracying02.png")
 

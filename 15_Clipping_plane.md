@@ -62,5 +62,24 @@ $\overrightarrow{N} $ 为单位向量， $-D$是原点到平面的'signed distan
 
 ## Clipping volume
 
+根据我们的数据
+
+![](images/clipping_1.png)
+
+
+
+如果我们的 foc 都选 90°的，那么如下：
+
+
+![](images/clipping_2.png)
+
+
+- left plane 的 $\overrightarrow{N}$ 是 $ (\cfrac{1}{\sqrt2}, 0, \cfrac{1}{\sqrt2})$
+- right plane 的 $\overrightarrow{N}$ 是 $ (-\cfrac{1}{\sqrt2}, 0, \cfrac{1}{\sqrt2})$
+- bottom plane 的 $\overrightarrow{N}$ 是 $ ( 0, \cfrac{1}{\sqrt2}, \cfrac{1}{\sqrt2})$
+- top plane 的 $\overrightarrow{N}$ 是 $ ( 0, -\cfrac{1}{\sqrt2}, \cfrac{1}{\sqrt2})$
+
+所有的 $ D = 0$ 因为都通过原点。
+
 
 
