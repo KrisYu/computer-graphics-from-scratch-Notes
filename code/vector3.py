@@ -31,15 +31,26 @@ class Vector3:
     @property
     def x(self):
         return self._v[0]
-    
+
+    @x.setter
+    def x(self, value):
+        self._v[0] = value
+
     @property
     def y(self):
         return self._v[1]
-
+    @y.setter
+    def y(self, value):
+        self._v[1] = value
+        
     @property
     def z(self):
         return self._v[2]
 
+    @z.setter
+    def z(self, value):
+        self._v[2] = value
+        
     @property
     def r(self):
         return self._v[0]
