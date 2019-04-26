@@ -8,15 +8,14 @@ from collections import namedtuple
 Vector2 = namedtuple('Vector2', ['x', 'y'])
 
 def drawLine(p0, p1, color):
-
+	"""
+	draw line using PIL library
+	"""
 	p0 = canvasToScreen(p0)
 	p1 = canvasToScreen(p1)
 
-	x0, y0 = p0.x, p0.y
-	x1, y1 = p1.x, p1.y
-
 	draw = ImageDraw.Draw(image)
-	draw.line((x0, y0, x1, y1), fill = color)
+	draw.line((p0, p1), fill = color)
 
 
 def viewportToCanvas(p2d):
@@ -41,7 +40,7 @@ def canvasToScreen(v2):
 	v2: Vector2
 	rtype: Vector2 on screen
 	"""
-	return Vector2(screen_width // 2 + v2.x, screen_height // 2 - v2.y)
+	return Vector2(screen_width / 2 + v2.x, screen_height / 2 - v2.y)
 
 
 screen_width = 600
@@ -66,10 +65,10 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
-background_color = (255, 255, 255, 255)
+background_color = (255, 255, 255)
 
 
-image = Image.new("RGBA", (screen_width, screen_height), background_color)
+image = Image.new("RGB", (screen_width, screen_height), background_color)
 
 drawLine(projectVertex(vA),projectVertex(vB), BLUE);
 drawLine(projectVertex(vB),projectVertex(vC), BLUE);

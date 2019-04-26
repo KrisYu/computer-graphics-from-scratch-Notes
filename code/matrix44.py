@@ -1,4 +1,5 @@
 from math import sin,cos
+from vector3 import Vector3
 
 class Matrix44:
 
@@ -155,6 +156,14 @@ class Matrix44:
         return m.make_translation(x, y, z)
 
     @classmethod
+    def translation_vec3(cls, v):
+        """Creates a translation Matrix44 from Vector3. ).
+        """
+        x, y, z = v
+        m = cls.__new__(cls, object)
+        return m.make_translation(x, y, z)
+
+    @classmethod
     def xyz_rotation(cls, angle_x, angle_y, angle_z):
         """Creates a Matrix44 that does a rotation about each axis.
         
@@ -298,7 +307,7 @@ class Matrix44:
         return self
 
     def transform_vec4(self, v):
-        """Transforms a vector4 and returns the result as a tuple.
+        """Transforms a vector4 and returns the result as a 4 element tuple.
         
         v -- Vector to transform
         
@@ -310,6 +319,19 @@ class Matrix44:
                  m[4] * x + m[5] * y + m[6] * z  + m[7] * w,
                  m[8] * x + m[9] * y + m[10] * z + m[11] * w,
                  m[12] *x + m[13] * y + m[14] * z + m[15] *w)
+
+    def transform_vec3(self, v):
+        """Transforms a Vector3 and returns the result as a Vector3.
+        
+        v -- Vector to transform
+        
+        """
+        
+        m = self._m        
+        x, y, z = v
+        return Vector3( m[0] * x + m[1] * y + m[2] * z  + m[3],
+                        m[4] * x + m[5] * y + m[6] * z  + m[7],
+                        m[8] * x + m[9] * y + m[10] * z + m[11])
 
     def get_inverse_rotation(self):
         """Returns the inverse of a Matrix44 with only rotation. 

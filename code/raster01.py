@@ -12,8 +12,8 @@ def putPixel(pixels, x, y, color):
 	The PutPixel() function.
 	"""
 	# canvas coordinate to screen coordinate
-	x = screen_width // 2 + x
-	y = screen_height // 2  - y 
+	x = screen_width / 2 + x
+	y = screen_height / 2  - y 
 
 	if x < 0 or x >= screen_height or y < 0 or y >= screen_height:
 		return
@@ -21,10 +21,15 @@ def putPixel(pixels, x, y, color):
 	pixels[x, y] = color
 
 def interpolate(i0, d0, i1, d1):
-	if i0 == i1:
-		return [d0]
+	"""
+	dependent value change according to indepent value
+
+	d: dependent value
+	i: indepent value
+	rtype : a list of dependent values change accoding to indepent value
+	"""
 	values = []
-	a = (d1 - d0) / (i1 - i0)
+	a = (d1 - d0) / (i1 - i0) if i0 != i1 else 0
 	d = d0
 	for i in range(i0,i1):
 		values.append(d)
@@ -32,6 +37,9 @@ def interpolate(i0, d0, i1, d1):
 	return values
 
 def drawLine(p0, p1, color):
+	"""
+	draw line according to it is more vertical or more horizontal
+	"""
 	dx = p1.x - p0.x
 	dy = p1.y - p0.y
 
@@ -41,14 +49,14 @@ def drawLine(p0, p1, color):
 
 		ys = interpolate(p0.x, p0.y, p1.x, p1.y)
 		for x in range(p0.x,p1.x):
-			putPixel(pixels, x, ys[(x - p0.x) | 0], color)
+			putPixel(pixels, x, ys[(x - p0.x)], color)
 	else:
 		if dy < 0:
 			p0,p1 = p1,p0
 
 		xs = interpolate(p0.y, p0.x, p1.y, p1.x)
 		for y in range(p0.y,p1.y):
-			putPixel(pixels, xs[(y - p0.y) | 0], y, color)
+			putPixel(pixels, xs[(y - p0.y)], y, color)
 
 screen_width = 600
 screen_height = 600

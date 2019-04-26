@@ -7,7 +7,7 @@ from collections import namedtuple
 from matrix44 import Matrix44
 from math import radians
 
-Point = namedtuple('Point', 'x y')
+Vector2 = namedtuple('Vector2', 'x y')
 Triangle = namedtuple('Triangle', 'v0 v1 v2 color')
 Model = namedtuple('Model', 'vertexes triangles')
 Camera = namedtuple('Camera', 'position orientation')
@@ -18,7 +18,8 @@ class Instance:
 		self.position = position
 		self.orientation = orientation
 		self.scale = scale		
-		self.transform = Matrix44.translation(position.x, position.y, position.z) * Matrix44.scale(scale) * orientation
+		
+		self.transform = Matrix44.translation_vec3(position) * Matrix44.scale(scale) * orientation
 		
 def renderTriangle(triangle, projected):
 	p0, p1, p2, color = projected[triangle.v0], projected[triangle.v1], projected[triangle.v2], triangle.color
@@ -31,25 +32,25 @@ def renderTriangle(triangle, projected):
 def projectVertexToCanvas(v3):
 	"""
 	v3: Vector3
-	rtype: point
+	rtype: Vector2
 	"""
-	return Point( (v3.x * projection_plane_z * screen_width) / (v3.z * viewport_size),
+	return Vector2( (v3.x * projection_plane_z * screen_width) / (v3.z * viewport_size),
 		     (v3.y * projection_plane_z * screen_height) / (v3.z * viewport_size) )
 
 def canvasToScreen(v2):
 	"""
-	v2: Point
-	rtype: Point on screen
+	v2: Vector2
+	rtype: Vector2 on screen
 	"""
-	return Point(screen_width // 2 + v2.x, screen_height // 2 - v2.y)
+	return Vector2(screen_width / 2 + v2.x, screen_height / 2 - v2.y)
 
 
 def renderModel(model, transform):
 	projected = []
 
-	for (x, y, z) in model.vertexes:
-		xt, yt, zt, _ = transform.transform_vec4((x, y, z ,1))
-		projected.append(projectVertexToCanvas(Vector3(xt, yt, zt)))
+	for vertex in model.vertexes:
+		vertexH = transform.transform_vec3(vertex)
+		projected.append(projectVertexToCanvas(vertexH))
 
 	for triangle in model.triangles:
 		renderTriangle(triangle, projected)
@@ -58,7 +59,7 @@ def renderModel(model, transform):
 def renderScene(camera, instances):
 	"""
 	"""
-	cameraTranlationMatrixInverse = Matrix44.translation(camera.position.x, camera.position.y, camera.position.z).get_inverse_translation()
+	cameraTranlationMatrixInverse = Matrix44.translation_vec3(camera.position).get_inverse_translation()
 	cameraRotationInverse = camera.orientation.get_inverse_rotation()
 
 	cameraMatrix = cameraRotationInverse * cameraTranlationMatrixInverse
@@ -117,8 +118,8 @@ cube = Model(vertexes, triangles)
 
 camera = Camera(Vector3(-3, 1, 2), Matrix44.y_rotation(radians(-30)))
 
-instances = [Instance(cube, Vector3(-1.5, 0, 7), Matrix44(), 0.5),
-			Instance(cube, Vector3(1.25, 2, 7.5), Matrix44.y_rotation(radians(195)), 1.0)]
+instances = [Instance(cube, Vector3(-1.5, 0, 7), Matrix44(), 0.75),
+			Instance(cube, Vector3(1.25, 2.5, 7.5), Matrix44.y_rotation(radians(195)), 1.0)]
 
 renderScene(camera, instances)
 

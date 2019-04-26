@@ -12,6 +12,9 @@ Instance = namedtuple('Instance', 'model position')
 
 
 def renderTriangle(triangle, projected):
+	"""
+	draw triangle using projected point and triangle index
+	"""
 	p0, p1, p2, color = projected[triangle.v0], projected[triangle.v1], projected[triangle.v2], triangle.color
 	p0, p1, p2 = canvasToScreen(p0), canvasToScreen(p1), canvasToScreen(p2)
 
@@ -44,6 +47,7 @@ def canvasToScreen(v2):
 
 def renderInstance(instance):
 	"""
+	render instance
 	"""
 	projected = []
 	model = instance.model
@@ -56,6 +60,9 @@ def renderInstance(instance):
 
 
 def renderScene(instances):
+	"""
+	render instances of the scene
+	"""
 	for instance in instances:
 		renderInstance(instance)
 
@@ -107,7 +114,8 @@ image = Image.new("RGB", (screen_width, screen_height), background_color)
 
 cube = Model(vertexes, triangles)
 
-instances = [Instance(cube, Vector3(-1.5, 0, 7)),Instance(cube, Vector3(1.25, 2, 7.5))]
+instances = [Instance(cube, Vector3(-1.5, 0, 7)),
+             Instance(cube, Vector3(1.25, 2, 7.5))]
 
 renderScene(instances)
 

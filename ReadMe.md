@@ -1,6 +1,6 @@
 # ReadMe
 
-这里是我在阅读 [computer graphics from scratch](https://github.com/ggambetta/computer-graphics-from-scratch) 记下的一些笔记。同时我用了Python3 和 PIL库来重写代码。
+这里是我在阅读 [computer graphics from scratch](https://github.com/ggambetta/computer-graphics-from-scratch) 记下的一些笔记。同时我用了Python3 和 PIL 库来重写代码。
 
 
 ## 光线追踪
@@ -25,3 +25,4 @@
 - [[从零开始计算机图形学]之十二画两个正方体](https://zhuanlan.zhihu.com/p/63610383)
 - [[从零开始计算机图形学]之十三位置变换](https://zhuanlan.zhihu.com/p/63610609)
 - [[从零开始计算机图形学]之十四数学知识](https://zhuanlan.zhihu.com/p/63610995)
+- [[从零开始计算机图形学]之十五裁剪](https://zhuanlan.zhihu.com/p/63915042)
