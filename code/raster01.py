@@ -1,6 +1,6 @@
 #!python
-# draw line 
-#raster-01.py 
+# draw line
+#raster-01.py
 from PIL import Image
 from collections import namedtuple
 
@@ -13,7 +13,7 @@ def putPixel(pixels, x, y, color):
 	"""
 	# canvas coordinate to screen coordinate
 	x = screen_width / 2 + x
-	y = screen_height / 2  - y 
+	y = screen_height / 2  - y
 
 	if x < 0 or x >= screen_height or y < 0 or y >= screen_height:
 		return
@@ -28,8 +28,10 @@ def interpolate(i0, d0, i1, d1):
 	i: indepent value
 	rtype : a list of dependent values change accoding to indepent value
 	"""
+	if i0 == i1:
+		return [d0]
 	values = []
-	a = (d1 - d0) / (i1 - i0) if i0 != i1 else 0
+	a = (d1 - d0) / (i1 - i0)
 	d = d0
 	for i in range(i0,i1):
 		values.append(d)
@@ -67,4 +69,5 @@ pixels = image.load()
 
 drawLine(Point(-200, -100), Point(240,120), (0,0,0))
 drawLine(Point(-50, -200), Point(60, 240), (0,0,0))
-image.save("raster01.png")
+image.show()
+#image.save("raster01.png")

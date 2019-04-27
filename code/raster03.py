@@ -1,6 +1,6 @@
 #!python
-# draw gradient triangle 
-#raster-03.py 
+# draw gradient triangle
+#raster-03.py
 from PIL import Image
 from collections import namedtuple
 from vector3 import Vector3
@@ -13,7 +13,7 @@ def putPixel(pixels, x, y, color):
 	"""
 	# canvas coordinate to screen coordinate
 	x = screen_width / 2 + x
-	y = screen_height / 2  - y 
+	y = screen_height / 2  - y
 
 	if x < 0 or x >= screen_height or y < 0 or y >= screen_height:
 		return
@@ -23,53 +23,33 @@ def putPixel(pixels, x, y, color):
 def interpolate(i0, d0, i1, d1):
 	"""
 	dependent value change according to indepent value
-	
+
 	d: dependent value
 	i: indepent value
 	rtype : a list of dependent values change accoding to indepent value
 	"""
+	if i0 == i1:
+		return [d0]
 	values = []
-	a = (d1 - d0) / (i1 - i0) if i0 != i1 else 0
+	a = (d1 - d0) / (i1 - i0)
 	d = d0
-	for i in range(i0,i1):
+	for i in range(i0,i1+1):
 		values.append(d)
 		d = d + a
 	return values
-
-def drawLine(p0, p1, color):
-	"""
-	draw line according to it is more vertical or more horizontal
-	"""
-	dx = p1.x - p0.x
-	dy = p1.y - p0.y
-
-	if abs(dx) > abs(dy):
-		if dx < 0:
-			p0,p1 = p1,p0
-
-		ys = interpolate(p0.x, p0.y, p1.x, p1.y)
-		for x in range(p0.x,p1.x):
-			putPixel(pixels, x, ys[(x - p0.x)], color)
-	else:
-		if dy < 0:
-			p0,p1 = p1,p0
-
-		xs = interpolate(p0.y, p0.x, p1.y, p1.x)
-		for y in range(p0.y,p1.y):
-			putPixel(pixels, xs[(y - p0.y)], y, color)
 
 
 def drawShadedTriangle(p0, p1, p2, color):
 	"""
 	draw shaded triangle using lerp
 	"""
+	if p1.y < p0.y: p0, p1 = p1, p0
+	if p2.y < p0.y: p0, p2 = p2, p0
+	if p2.y < p1.y: p1, p2 = p2, p1
+
 	x0,y0,h0 = p0.x,p0.y,p0.h
 	x1,y1,h1 = p1.x,p1.y,p1.h
 	x2,y2,h2 = p2.x,p2.y,p2.h
-
-	if y1 < y0: p0, p1 = p1, p0
-	if y2 < y0: p0, p2 = p2, p0
-	if y2 < y1: p1, p2 = p2, p1
 
 	x01 = interpolate(y0, x0, y1, x1)
 	h01 = interpolate(y0, h0, y1, h1)
@@ -86,7 +66,7 @@ def drawShadedTriangle(p0, p1, p2, color):
 	del h01[-1]
 	h012 = h01 + h12
 
-	m = len(x02) // 2 
+	m = len(x02) // 2
 	if x02[m] < x012[m]:
 		x_left = x02
 		x_right = x012
@@ -104,10 +84,10 @@ def drawShadedTriangle(p0, p1, p2, color):
 	x_left = [int(x) for x in x_left]
 	x_right = [int(x) for x in x_right]
 
-	# 
-	for y in range(y0, y2-1):
-		x_l = x_left[y - y0] | 0
-		x_r = x_right[y - y0] | 0
+	#
+	for y in range(y0, y2):
+		x_l = x_left[y - y0]
+		x_r = x_right[y - y0]
 
 		h_segment = interpolate(x_l, h_left[y-y0], x_r, h_right[y-y0])
 		for x in range(x_l, x_r):
