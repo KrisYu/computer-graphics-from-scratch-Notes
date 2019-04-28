@@ -8,39 +8,39 @@ from collections import namedtuple
 Vector2 = namedtuple('Vector2', ['x', 'y'])
 
 def drawLine(p0, p1, color):
-	"""
-	draw line using PIL library
-	"""
-	p0 = canvasToScreen(p0)
-	p1 = canvasToScreen(p1)
+    """
+    draw line using PIL library
+    """
+    p0 = canvasToScreen(p0)
+    p1 = canvasToScreen(p1)
 
-	draw = ImageDraw.Draw(image)
-	draw.line((p0, p1), fill = color)
+    draw = ImageDraw.Draw(image)
+    draw.line((p0, p1), fill = color)
 
 
 def viewportToCanvas(p2d):
-	"""
-	p2d: Vector2
-	rtype: Vector2
-	"""
-	return Vector2(p2d.x * screen_width / viewport_size,
-		p2d.y * screen_height / viewport_size)
+    """
+    p2d: Vector2
+    rtype: Vector2
+    """
+    return Vector2(p2d.x * screen_width / viewport_size,
+        p2d.y * screen_height / viewport_size)
 
 
 def projectVertex(v3):
-	"""
-	v3: Vector3
-	rtype: Vector2
-	"""
-	return viewportToCanvas(Vector2(v3.x * projection_plane_z / v3.z,
-		v3.y * projection_plane_z / v3.z))
+    """
+    v3: Vector3
+    rtype: Vector2
+    """
+    return viewportToCanvas(Vector2(v3.x * projection_plane_z / v3.z,
+        v3.y * projection_plane_z / v3.z))
 
 def canvasToScreen(v2):
-	"""
-	v2: Vector2
-	rtype: Vector2 on screen
-	"""
-	return Vector2(screen_width / 2 + v2.x, screen_height / 2 - v2.y)
+    """
+    v2: Vector2
+    rtype: Vector2 on screen
+    """
+    return Vector2(screen_width / 2 + v2.x, screen_height / 2 - v2.y)
 
 
 screen_width = 600

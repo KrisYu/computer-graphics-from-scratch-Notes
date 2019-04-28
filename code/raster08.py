@@ -160,14 +160,14 @@ projection_plane_z = 1.0
 
 
 vertexes = [
-  Vector3(1, 1, 1),
-  Vector3(-1, 1, 1),
-  Vector3(-1, -1, 1),
-  Vector3(1, -1, 1),
-  Vector3(1, 1, -1),
-  Vector3(-1, 1, -1),
-  Vector3(-1, -1, -1),
-  Vector3(1, -1, -1)
+    Vector3(1, 1, 1),
+    Vector3(-1, 1, 1),
+    Vector3(-1, -1, 1),
+    Vector3(1, -1, 1),
+    Vector3(1, 1, -1),
+    Vector3(-1, 1, -1),
+    Vector3(-1, -1, -1),
+    Vector3(1, -1, -1)
 ]
 
 
@@ -179,18 +179,18 @@ PURPLE = (255, 0, 255)
 CYAN = (0, 255, 255)
 
 triangles = [
-  Triangle(0, 1, 2, RED),
-  Triangle(0, 2, 3, RED),
-  Triangle(4, 0, 3, GREEN),
-  Triangle(4, 3, 7, GREEN),
-  Triangle(5, 4, 7, BLUE),
-  Triangle(5, 7, 6, BLUE),
-  Triangle(1, 5, 6, YELLOW),
-  Triangle(1, 6, 2, YELLOW),
-  Triangle(4, 5, 1, PURPLE),
-  Triangle(4, 1, 0, PURPLE),
-  Triangle(2, 6, 7, CYAN),
-  Triangle(2, 7, 3, CYAN),
+    Triangle(0, 1, 2, RED),
+    Triangle(0, 2, 3, RED),
+    Triangle(4, 0, 3, GREEN),
+    Triangle(4, 3, 7, GREEN),
+    Triangle(5, 4, 7, BLUE),
+    Triangle(5, 7, 6, BLUE),
+    Triangle(1, 5, 6, YELLOW),
+    Triangle(1, 6, 2, YELLOW),
+    Triangle(4, 5, 1, PURPLE),
+    Triangle(4, 1, 0, PURPLE),
+    Triangle(2, 6, 7, CYAN),
+    Triangle(2, 7, 3, CYAN),
 ]
 
 
@@ -202,11 +202,11 @@ cube = Model(vertexes, triangles, Vector3(0, 0, 0), sqrt(3))
 
 sqrt_2 = sqrt(2)
 clipping_planes = [
-  Plane(Vector3(0, 0, 1), -1), # Near
-  Plane(Vector3(sqrt_2, 0, sqrt_2), 0), # Left
-  Plane(Vector3(-sqrt_2, 0, sqrt_2), 0), # Right
-  Plane(Vector3(0, -sqrt_2, sqrt_2), 0), # Top
-  Plane(Vector3(0, sqrt_2, sqrt_2), 0) # Bottom
+    Plane(Vector3(0, 0, 1), -1), # Near
+    Plane(Vector3(sqrt_2, 0, sqrt_2), 0), # Left
+    Plane(Vector3(-sqrt_2, 0, sqrt_2), 0), # Right
+    Plane(Vector3(0, -sqrt_2, sqrt_2), 0), # Top
+    Plane(Vector3(0, sqrt_2, sqrt_2), 0) # Bottom
 ]
 
 

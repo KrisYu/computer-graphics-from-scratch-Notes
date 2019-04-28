@@ -6,7 +6,6 @@
 ## 光线追踪
 
 - [[从零开始计算机图形学]之一光线追踪](https://zhuanlan.zhihu.com/p/63337701)
-
 - [[从零开始计算机图形学]之二漫反射](https://zhuanlan.zhihu.com/p/63343562)
 - [[从零开始计算机图形学]之三高光](https://zhuanlan.zhihu.com/p/63350881)
 - [[从零开始计算机图形学]之四阴影](https://zhuanlan.zhihu.com/p/63370038)

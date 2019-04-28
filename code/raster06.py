@@ -12,59 +12,59 @@ Instance = namedtuple('Instance', 'model position')
 
 
 def renderTriangle(triangle, projected):
-	"""
-	draw triangle using projected point and triangle index
-	"""
-	p0, p1, p2, color = projected[triangle.v0], projected[triangle.v1], projected[triangle.v2], triangle.color
-	p0, p1, p2 = canvasToScreen(p0), canvasToScreen(p1), canvasToScreen(p2)
+    """
+    draw triangle using projected point and triangle index
+    """
+    p0, p1, p2, color = projected[triangle.v0], projected[triangle.v1], projected[triangle.v2], triangle.color
+    p0, p1, p2 = canvasToScreen(p0), canvasToScreen(p1), canvasToScreen(p2)
 
-	draw = ImageDraw.Draw(image)
-	draw.polygon([p0, p1, p2],outline = color)
+    draw = ImageDraw.Draw(image)
+    draw.polygon([p0, p1, p2],outline = color)
 
 def viewportToCanvas(p2d):
-	"""
-	p2d: Vector2
-	rtype: Vector2
-	"""
-	return Vector2(p2d.x * screen_width / viewport_size,
-		p2d.y * screen_height / viewport_size)
+    """
+    p2d: Vector2
+    rtype: Vector2
+    """
+    return Vector2(p2d.x * screen_width / viewport_size,
+        p2d.y * screen_height / viewport_size)
 
 def projectVertex(v3):
-	"""
-	v3: Vector3
-	rtype: Vector2
-	"""
-	return viewportToCanvas(Vector2(v3.x * projection_plane_z / v3.z,
-		v3.y * projection_plane_z / v3.z))
+    """
+    v3: Vector3
+    rtype: Vector2
+    """
+    return viewportToCanvas(Vector2(v3.x * projection_plane_z / v3.z,
+        v3.y * projection_plane_z / v3.z))
 
 def canvasToScreen(v2):
-	"""
-	v2: Vector2
-	rtype: Vector2 on screen
-	"""
-	return Vector2(screen_width // 2 + v2.x, screen_height // 2 - v2.y)
+    """
+    v2: Vector2
+    rtype: Vector2 on screen
+    """
+    return Vector2(screen_width // 2 + v2.x, screen_height // 2 - v2.y)
 
 
 def renderInstance(instance):
-	"""
-	render instance
-	"""
-	projected = []
-	model = instance.model
+    """
+    render instance
+    """
+    projected = []
+    model = instance.model
 
-	for vertex in model.vertexes:
-		projected.append(projectVertex(vertex + instance.position))
+    for vertex in model.vertexes:
+        projected.append(projectVertex(vertex + instance.position))
 
-	for triangle in model.triangles:
-		renderTriangle(triangle, projected)
+    for triangle in model.triangles:
+        renderTriangle(triangle, projected)
 
 
 def renderScene(instances):
-	"""
-	render instances of the scene
-	"""
-	for instance in instances:
-		renderInstance(instance)
+    """
+    render instances of the scene
+    """
+    for instance in instances:
+        renderInstance(instance)
 
 screen_width = 600
 screen_height = 600
@@ -74,14 +74,14 @@ projection_plane_z = 1.0
 
 
 vertexes = [
-  Vector3(1, 1, 1),
-  Vector3(-1, 1, 1),
-  Vector3(-1, -1, 1),
-  Vector3(1, -1, 1),
-  Vector3(1, 1, -1),
-  Vector3(-1, 1, -1),
-  Vector3(-1, -1, -1),
-  Vector3(1, -1, -1)
+    Vector3(1, 1, 1),
+    Vector3(-1, 1, 1),
+    Vector3(-1, -1, 1),
+    Vector3(1, -1, 1),
+    Vector3(1, 1, -1),
+    Vector3(-1, 1, -1),
+    Vector3(-1, -1, -1),
+    Vector3(1, -1, -1)
 ]
 
 
@@ -93,18 +93,18 @@ PURPLE = (255, 0, 255)
 CYAN = (0, 255, 255)
 
 triangles = [
-  Triangle(0, 1, 2, RED),
-  Triangle(0, 2, 3, RED),
-  Triangle(4, 0, 3, GREEN),
-  Triangle(4, 3, 7, GREEN),
-  Triangle(5, 4, 7, BLUE),
-  Triangle(5, 7, 6, BLUE),
-  Triangle(1, 5, 6, YELLOW),
-  Triangle(1, 6, 2, YELLOW),
-  Triangle(4, 5, 1, PURPLE),
-  Triangle(4, 1, 0, PURPLE),
-  Triangle(2, 6, 7, CYAN),
-  Triangle(2, 7, 3, CYAN),
+    Triangle(0, 1, 2, RED),
+    Triangle(0, 2, 3, RED),
+    Triangle(4, 0, 3, GREEN),
+    Triangle(4, 3, 7, GREEN),
+    Triangle(5, 4, 7, BLUE),
+    Triangle(5, 7, 6, BLUE),
+    Triangle(1, 5, 6, YELLOW),
+    Triangle(1, 6, 2, YELLOW),
+    Triangle(4, 5, 1, PURPLE),
+    Triangle(4, 1, 0, PURPLE),
+    Triangle(2, 6, 7, CYAN),
+    Triangle(2, 7, 3, CYAN),
 ]
 
 

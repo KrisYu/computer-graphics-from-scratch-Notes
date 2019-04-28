@@ -9,50 +9,50 @@ Vector2 = namedtuple('Vector2', 'x y')
 Triangle = namedtuple('Triangle', 'v0 v1 v2 color')
 
 def renderTriangle(triangle, projected):
-	"""
-	draw triangle using projected point and triangle index
-	"""
-	p0, p1, p2, color = projected[triangle.v0], projected[triangle.v1], projected[triangle.v2], triangle.color
-	p0, p1, p2 = canvasToScreen(p0), canvasToScreen(p1), canvasToScreen(p2)
+    """
+    draw triangle using projected point and triangle index
+    """
+    p0, p1, p2, color = projected[triangle.v0], projected[triangle.v1], projected[triangle.v2], triangle.color
+    p0, p1, p2 = canvasToScreen(p0), canvasToScreen(p1), canvasToScreen(p2)
 
-	draw = ImageDraw.Draw(image)
-	draw.polygon([p0, p1, p2],outline = color)
+    draw = ImageDraw.Draw(image)
+    draw.polygon([p0, p1, p2],outline = color)
 
 def viewportToCanvas(p2d):
-	"""
-	p2d: Vector2
-	rtype: Vector2
-	"""
-	return Vector2(p2d.x * screen_width / viewport_size,
-		p2d.y * screen_height / viewport_size)
+    """
+    p2d: Vector2
+    rtype: Vector2
+    """
+    return Vector2(p2d.x * screen_width / viewport_size,
+        p2d.y * screen_height / viewport_size)
 
 
 def projectVertex(v3):
-	"""
-	v3: Vector3
-	rtype: Vector2
-	"""
-	return viewportToCanvas(Vector2(v3.x * projection_plane_z / v3.z,
-		v3.y * projection_plane_z / v3.z))
+    """
+    v3: Vector3
+    rtype: Vector2
+    """
+    return viewportToCanvas(Vector2(v3.x * projection_plane_z / v3.z,
+        v3.y * projection_plane_z / v3.z))
 
 def canvasToScreen(v2):
-	"""
-	v2: Vector2
-	rtype: Vector2 on screen
-	"""
-	return Vector2(screen_width / 2 + v2.x, screen_height / 2 - v2.y)
+    """
+    v2: Vector2
+    rtype: Vector2 on screen
+    """
+    return Vector2(screen_width / 2 + v2.x, screen_height / 2 - v2.y)
 
 def renderObject(vertexes, triangles):
-	"""
-	vertexes: Vector3
-	triangles: triangles of the object
-	"""
-	projected = []
-	for vertex in vertexes:
-		projected.append(projectVertex(vertex))
+    """
+    vertexes: Vector3
+    triangles: triangles of the object
+    """
+    projected = []
+    for vertex in vertexes:
+        projected.append(projectVertex(vertex))
 
-	for triangle in triangles:
-		renderTriangle(triangle, projected)
+    for triangle in triangles:
+        renderTriangle(triangle, projected)
 
 
 
@@ -103,8 +103,8 @@ background_color = (255, 255, 255)
 image = Image.new("RGB", (screen_width, screen_height), background_color)
 
 for vertex in vertexes:
-	vertex.x -= 1.5
-	vertex.z += 7
+    vertex.x -= 1.5
+    vertex.z += 7
 
 renderObject(vertexes, triangles)
 
