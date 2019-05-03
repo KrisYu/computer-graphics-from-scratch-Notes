@@ -27,3 +27,4 @@
 - [[从零开始计算机图形学]之十五裁剪](https://zhuanlan.zhihu.com/p/63915042)
 - [[从零开始计算机图形学]之十六隐藏面消除](https://zhuanlan.zhihu.com/p/64018550)
 - [[从零开始计算机图形学]之十七平面着色](https://zhuanlan.zhihu.com/p/64252115)
+- [[从零开始计算机图形学]之十八Gouraud着色](https://zhuanlan.zhihu.com/p/64523601)

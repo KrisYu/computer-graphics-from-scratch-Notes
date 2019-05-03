@@ -1,5 +1,5 @@
-r = 5
-n = 25
+r = 1
+n = 15
 
 from cmath import pi
 from math import sqrt, cos, sin
@@ -17,7 +17,6 @@ for d in range(n + 1):
         vertexes.append(Vector3(xb, yb, zb))
         print (xb,'\t',yb,'\t',zb)
 
-triangles = []
 
 for i in range(n):
     start = i * n
@@ -28,3 +27,4 @@ for i in range(n):
         d = c + 1
         triangles.append([a, b, c])
         triangles.append([a, b, d])
+
