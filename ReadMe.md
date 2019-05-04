@@ -28,3 +28,4 @@
 - [[从零开始计算机图形学]之十六隐藏面消除](https://zhuanlan.zhihu.com/p/64018550)
 - [[从零开始计算机图形学]之十七平面着色](https://zhuanlan.zhihu.com/p/64252115)
 - [[从零开始计算机图形学]之十八Gouraud着色](https://zhuanlan.zhihu.com/p/64523601)
+- [[从零开始计算机图形学]之十九Phong着色](https://zhuanlan.zhihu.com/p/64573694)

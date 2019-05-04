@@ -1,6 +1,6 @@
 #!python
-#flat shading
-#raster-13.py
+#Phong shading with object normal
+#raster-16.py
 from PIL import Image, ImageDraw
 from vector3 import Vector3
 from collections import namedtuple
@@ -9,7 +9,7 @@ from math import radians, sqrt, inf, cos, sin
 from cmath import pi
 
 Vector2 = namedtuple('Vector2', 'x y')
-Triangle = namedtuple('Triangle', 'v0 v1 v2 color')
+Triangle = namedtuple('Triangle', 'v0 v1 v2 color normal0 normal1 normal2')
 Model = namedtuple('Model', 'vertexes triangles bounds_center bounds_radius')
 Plane = namedtuple('Plane', 'normal distance')
 Depth = namedtuple('Depth', 'x y buffer')
@@ -60,6 +60,25 @@ def projectVertexToCanvas(v3):
     return Vector2( int((v3.x * projection_plane_z * screen_width) / (v3.z * viewport_size)),
                   int((v3.y * projection_plane_z * screen_height) / (v3.z * viewport_size)) )
 
+def canvasToViewPort(p2d):
+    """
+    p2d: Vector2
+    rtype: Vector2
+    """
+    return Vector2(p2d.x * viewport_size / screen_width,
+        p2d.y * viewport_size / screen_height)
+
+
+def unprojectVertex(x, y, inv_z):
+    """
+    Unproject a point from canvas to 3d space
+    """
+    oz = 1 / inv_z
+    ux = x * oz / projection_plane_z
+    uy = y * oz / projection_plane_z
+    p2d = canvasToViewPort(Vector2(ux, uy))
+    return Vector3(p2d.x, p2d.y, oz)
+
 def canvasToScreen(v2):
     """
     v2: Vector2
@@ -70,6 +89,7 @@ def canvasToScreen(v2):
 def interpolate(i0, d0, i1, d1):
     """
     dependent value change according to indepent value
+
     d: dependent value
     i: indepent value
     rtype : a list of dependent values change accoding to indepent value
@@ -103,14 +123,15 @@ def computeIllumination(point, normal, camera, lights):
         else:
             vec_l = Vector3(0, 0, 0)
             if light.ltype == 'POINT':
-                transformed_point_light = camera.matrix.transform_point(light.position)
+                transformed_point_light = camera.matrix.transform_vec3(light.position)
                 vec_l = transformed_point_light - point
             if light.ltype == 'DIRECTIONAL':
-                # only direction will effect directional light
-                transformed_directional_light = camera.matrix.transform_vector(-light.position)
+            # only direction will effect directional light
+                transformed_directional_light = camera.matrix.transform_vec3(-light.position)
                 vec_l = transformed_directional_light
 
             # diffuse
+            # print(normal, vec_l)
             cos_alpha = vec_l.dot(normal) / (normal.length * vec_l.length)
             if cos_alpha > 0:
                 illumination += cos_alpha * light.intensity
@@ -120,12 +141,12 @@ def computeIllumination(point, normal, camera, lights):
             view = -camera.position
             cos_beta = reflected.dot(view) / (reflected.length * view.length)
             if cos_beta > 0:
-                specular = 50
+                specular = 500
                 illumination += pow(cos_beta, specular) * light.intensity
 
     return illumination
 
-def renderTriangleUsingPoints(v0, v1, v2, color):
+def renderTriangleUsingPoints(v0, v1, v2, normal0 , normal1, normal2, color, transform):
     """
     """
     v01 = v1 - v0
@@ -136,51 +157,83 @@ def renderTriangleUsingPoints(v0, v1, v2, color):
     triangle_center = (v0 + v1 + v2) / 3
 
     # backface culling
-    if triangle_center.dot(-triangle_normal) <= 0:
+    if triangle_center.dot(-triangle_normal) < 0:
         return
 
-
     p0, p1, p2 = projectVertexToCanvas(v0) ,projectVertexToCanvas(v1), projectVertexToCanvas(v2)
+
 
     if p1.y < p0.y:
         p0, p1 = p1, p0
         v0, v1 = v1, v0
+        normal0, normal1 = normal1, normal0
     if p2.y < p0.y:
         p0, p2 = p2, p0
         v0, v2 = v2, v0
+        normal0, normal2 = normal2, normal0
     if p2.y < p1.y:
         p1, p2 = p2, p1
         v1, v2 = v2, v1
+        normal1, normal2 = normal2, normal1
 
-    x0,y0,z0 = p0.x,p0.y,1/v0.z
-    x1,y1,z1 = p1.x,p1.y,1/v1.z
-    x2,y2,z2 = p2.x,p2.y,1/v2.z
+    x0,y0,iz0 = p0.x,p0.y,1/v0.z
+    x1,y1,iz1 = p1.x,p1.y,1/v1.z
+    x2,y2,iz2 = p2.x,p2.y,1/v2.z
 
     x02, x012 = edgeInterpolate(y0, x0, y1, x1, y2, x2)
-    z02, z012 = edgeInterpolate(y0, z0, y1, z1, y2, z2)
+    iz02, iz012 = edgeInterpolate(y0, iz0, y1, iz1, y2, iz2)
+
+    # normal also changed in the coordinate
+    normal0 = transform.transform_vector(normal0)
+    normal1 = transform.transform_vector(normal1)
+    normal2 = transform.transform_vector(normal2)
+
+    # Phong shading:interpolate normal vectors
+    nx02, nx012 = edgeInterpolate(y0, normal0.x, y1, normal1.x, y2, normal2.x)
+    ny02, ny012 = edgeInterpolate(y0, normal0.y, y1, normal1.y, y2, normal2.y)
+    nz02, nz012 = edgeInterpolate(y0, normal0.z, y1, normal1.z, y2, normal2.z)
 
     m = len(x02) // 2
     if x02[m] < x012[m]:
         x_left, x_right = x02, x012
-        z_left, z_right = z02, z012
+        iz_left, iz_right = iz02, iz012
+
+        nx_left, nx_right = nx02, nx012
+        ny_left, ny_right = ny02, ny012
+        nz_left, nz_right = nz02, nz012
     else:
         x_left, x_right = x012, x02
-        z_left, z_right = z012, z02
+        iz_left, iz_right = iz012, iz02
+
+        nx_left, nx_right = nx012, nx02
+        ny_left, ny_right = ny012, ny02
+        nz_left, nz_right = nz012, nz02
 
     x_left = [int(x) for x in x_left]
     x_right = [int(x) for x in x_right]
 
-    illumination = computeIllumination(triangle_center, triangle_normal, camera, lights)
-
     for y in range(y0, y2):
         xl, xr = x_left[y - y0], x_right[y - y0]
-        zl, zr = z_left[y - y0], z_right[y - y0]
-        zscan = interpolate(xl, zl, xr, zr)
-        for x in range(xl, xr):
-            # print(type(x), type(y), type(zscan[x - xl]))
-            putPixel(pixels, x, y, zscan[x - xl], color * illumination)
 
-def clipTriangle(triangle, plane, vertexes):
+        zl, zr = iz_left[y - y0], iz_right[y - y0]
+        zscan = interpolate(xl, zl, xr, zr)
+
+        nxl, nxr = nx_left[y - y0], nx_right[y - y0]
+        nyl, nyr = ny_left[y - y0], ny_right[y - y0]
+        nzl, nzr = nz_left[y - y0], nz_right[y - y0]
+
+        nxscan = interpolate(xl, nxl, xr, nxr);
+        nyscan = interpolate(xl, nyl, xr, nyr);
+        nzscan = interpolate(xl, nzl, xr, nzr);
+
+        for x in range(xl, xr):
+            inv_z = zscan[x - xl]
+            vertex = unprojectVertex(x, y, inv_z)
+            normal = Vector3(nxscan[x - xl], nyscan[x - xl], nzscan[x - xl])
+            intensity = computeIllumination(vertex, normal, camera, lights)
+            putPixel(pixels, x, y, zscan[x - xl], color * intensity)
+
+def clipTriangle(triangle, plane, vertexes, transform):
     """
     clip a triangle against a plane, draw the output triangle.
     """
@@ -208,32 +261,13 @@ def clipTriangle(triangle, plane, vertexes):
         return []
     elif len(vin) == 3:
         # the triangle is fully in front of the plane.
-        renderTriangleUsingPoints(v0, v1, v2, triangle.color)
+        renderTriangleUsingPoints(v0, v1, v2, triangle.normal0, triangle.normal1, triangle.normal2,triangle.color, transform)
     elif len(vin) == 1:
         # the triangle has one vertex in, return one clipped triangle.
-        A = vin[0]
-        intersection_point = []
-        for v in vout:
-            t = ( -plane.distance - plane.normal.dot(A) ) \
-                   / ( plane.normal.dot(v - A) )
-            intersection_point.append(A + t * (v - A))
-
-        Bprime, Cprime = intersection_point
-        renderTriangleUsingPoints(A, Bprime, Cprime, triangle.color)
-
+        pass
     elif len(vin) == 2:
         # the triangle has two vertex in, return two clipped triangle.
-        A, B = vin
-        C = vout[0]
-        intersection_point = []
-        for v in vin:
-            t = ( -plane.distance - plane.normal.dot(v) ) \
-                / ( plane.normal.dot(C - v) )
-            intersection_point.append(v + t * (C - v))
-
-        Aprime, Bprime = intersection_point
-        renderTriangleUsingPoints(A, Aprime, B, triangle.color)
-        renderTriangleUsingPoints(Aprime, Bprime, B, triangle.color)
+        pass
 
 def generateSphere(n, r, color):
     """
@@ -258,14 +292,15 @@ def generateSphere(n, r, color):
             b = a + 1
             c = a + n
             d = c + 1
-            triangles.append(Triangle(a, d, b, color))
-            triangles.append(Triangle(a, c, d, color))
+            triangles.append(Triangle(a, d, b, color, vertexes[a], vertexes[d], vertexes[b]))
+            triangles.append(Triangle(a, c, d, color, vertexes[a], vertexes[c], vertexes[d]))
 
     return Model(vertexes, triangles, Vector3(0, 0, 0), r)
 
 def transformAndClip(clipping_planes, instance, transform):
     """
     Transform the bounding sphere, and attemp early discard.
+
     clipping_planes: Plane
     instance: Instance
     transform: Matrix44
@@ -286,7 +321,7 @@ def transformAndClip(clipping_planes, instance, transform):
 
     for triangle in model.triangles:
         for plane in clipping_planes:
-            clipTriangle(triangle, plane, transformed_vertexes)
+            clipTriangle(triangle, plane, transformed_vertexes, transform)
 
 def renderScene(camera, instances):
     """
@@ -297,8 +332,8 @@ def renderScene(camera, instances):
 
 #------- scene setup
 
-screen_width = 600
-screen_height = 600
+screen_width = 400
+screen_height = 400
 
 viewport_size = 1.0
 projection_plane_z = 1.0
@@ -327,18 +362,18 @@ PURPLE = Vector3(255, 0, 255)
 CYAN = Vector3(0, 255, 255)
 
 triangles = [
-    Triangle(0, 1, 2, RED),
-    Triangle(0, 2, 3, RED),
-    Triangle(4, 0, 3, GREEN),
-    Triangle(4, 3, 7, GREEN),
-    Triangle(5, 4, 7, BLUE),
-    Triangle(5, 7, 6, BLUE),
-    Triangle(1, 5, 6, YELLOW),
-    Triangle(1, 6, 2, YELLOW),
-    Triangle(4, 5, 1, PURPLE),
-    Triangle(4, 1, 0, PURPLE),
-    Triangle(2, 6, 7, CYAN),
-    Triangle(2, 7, 3, CYAN),
+    Triangle(0, 1, 2, RED,    Vector3(0, 0, 1), Vector3(0, 0, 1), Vector3(0, 0, 1)),
+    Triangle(0, 2, 3, RED,    Vector3(0, 0, 1), Vector3(0, 0, 1), Vector3(0, 0, 1)),
+    Triangle(4, 0, 3, GREEN,  Vector3(1, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 0)),
+    Triangle(4, 3, 7, GREEN,  Vector3(1, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 0)),
+    Triangle(5, 4, 7, BLUE,   Vector3(0, 0, -1), Vector3(0, 0, -1), Vector3(0, 0, -1)),
+    Triangle(5, 7, 6, BLUE,   Vector3(0, 0, -1), Vector3(0, 0, -1), Vector3(0, 0, -1)),
+    Triangle(1, 5, 6, YELLOW, Vector3(-1, 0, 0), Vector3(-1, 0, 0), Vector3(-1, 0, 0)),
+    Triangle(1, 6, 2, YELLOW, Vector3(-1, 0, 0), Vector3(-1, 0, 0), Vector3(-1, 0, 0)),
+    Triangle(1, 0, 5, PURPLE, Vector3(0, 1, 0), Vector3(0, 1, 0), Vector3(0, 1, 0)),
+    Triangle(5, 0, 4, PURPLE, Vector3(0, 1, 0), Vector3(0, 1, 0), Vector3(0, 1, 0)),
+    Triangle(2, 6, 7, CYAN,   Vector3(0, -1, 0), Vector3(0, -1, 0), Vector3(0, -1, 0)),
+    Triangle(2, 7, 3, CYAN,   Vector3(0, -1, 0), Vector3(0, -1, 0), Vector3(0, -1, 0))
 ]
 
 cube = Model(vertexes, triangles, Vector3(0, 0, 0), sqrt(3))
@@ -366,9 +401,9 @@ camera = Camera(Vector3(-3, 1, 2), Matrix44().y_rotation(radians(-30)), clipping
 
 depth_buffer = [[0 for _ in range(screen_height)] for _ in range(screen_width)]
 
-instances = [Instance(cube, Vector3(-1.5, -1, 7), Matrix44(), 0.75),
+instances = [Instance(cube, Vector3(-1.5, 0, 7), Matrix44(), 0.75),
              Instance(cube, Vector3(1.25, 2.5, 7.5), Matrix44.y_rotation(radians(195)), 1.0),
              Instance(sphere, Vector3(1.75, -0.5, 7), Matrix44(), 1.5)]
 
 renderScene(camera, instances)
-image.save("raster13.png")
+image.save("raster16.png")

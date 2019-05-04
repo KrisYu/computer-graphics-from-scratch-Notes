@@ -87,9 +87,9 @@ def renderTriangleUsingPoints(v0, v1, v2, color):
         p1, p2 = p2, p1
         v1, v2 = v2, v1
 
-    x0,y0,z0 = p0.x,p0.y,v0.z
-    x1,y1,z1 = p1.x,p1.y,v1.z
-    x2,y2,z2 = p2.x,p2.y,v2.z
+    x0,y0,z0 = p0.x,p0.y,1/v0.z
+    x1,y1,z1 = p1.x,p1.y,1/v1.z
+    x2,y2,z2 = p2.x,p2.y,1/v2.z
 
     x02, x012 = edgeInterpolate(y0, x0, y1, x1, y2, x2)
     z02, z012 = edgeInterpolate(y0, z0, y1, z1, y2, z2)

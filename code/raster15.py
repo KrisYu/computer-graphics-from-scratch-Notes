@@ -157,9 +157,9 @@ def renderTriangleUsingPoints(v0, v1, v2, normal0 , normal1, normal2, color, tra
         v1, v2 = v2, v1
         normal1, normal2 = normal2, normal1
 
-    x0,y0,z0 = p0.x,p0.y,v0.z
-    x1,y1,z1 = p1.x,p1.y,v1.z
-    x2,y2,z2 = p2.x,p2.y,v2.z
+    x0,y0,z0 = p0.x,p0.y,1/v0.z
+    x1,y1,z1 = p1.x,p1.y,1/v1.z
+    x2,y2,z2 = p2.x,p2.y,1/v2.z
 
     x02, x012 = edgeInterpolate(y0, x0, y1, x1, y2, x2)
     z02, z012 = edgeInterpolate(y0, z0, y1, z1, y2, z2)
@@ -168,14 +168,14 @@ def renderTriangleUsingPoints(v0, v1, v2, normal0 , normal1, normal2, color, tra
     normal0 = transform.transform_vector(normal0)
     normal1 = transform.transform_vector(normal1)
     normal2 = transform.transform_vector(normal2)
-    
+
     # Gouraud shading: compute lighting at the vertexes, and interpolate.
     i0 = computeIllumination(v0, normal0, camera, lights)
     i1 = computeIllumination(v1, normal1, camera, lights)
     i2 = computeIllumination(v2, normal2, camera, lights)
     i02, i012 = edgeInterpolate(y0, i0, y1, i1, y2, i2)
-    
-    
+
+
     m = len(x02) // 2
     if x02[m] < x012[m]:
         x_left, x_right = x02, x012
@@ -185,11 +185,11 @@ def renderTriangleUsingPoints(v0, v1, v2, normal0 , normal1, normal2, color, tra
         x_left, x_right = x012, x02
         z_left, z_right = z012, z02
         i_left, i_right = i012, i02
-    
-    
+
+
     x_left = [int(x) for x in x_left]
     x_right = [int(x) for x in x_right]
-    
+
     for y in range(y0, y2):
         xl, xr = x_left[y - y0], x_right[y - y0]
         zl, zr = z_left[y - y0], z_right[y - y0]
@@ -246,7 +246,7 @@ def generateSphere(n, r, color):
     for d in range(n+1):
         yb = 2 * r * d / n - r
         for i in range(n):
-            alpha = 2 * pi * i / n 
+            alpha = 2 * pi * i / n
             rprime = sqrt(r * r - yb * yb)
             xb = rprime * cos(alpha)
             zb = rprime * sin(alpha)
@@ -257,7 +257,7 @@ def generateSphere(n, r, color):
         for j in range(n - 1):
             a = start + j
             b = a + 1
-            c = a + n 
+            c = a + n
             d = c + 1
             triangles.append(Triangle(a, d, b, color, vertexes[a], vertexes[d], vertexes[b]))
             triangles.append(Triangle(a, c, d, color, vertexes[a], vertexes[c], vertexes[d]))
